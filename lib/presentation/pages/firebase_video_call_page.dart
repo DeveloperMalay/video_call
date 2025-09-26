@@ -4,6 +4,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bot_toast/bot_toast.dart';
 import '../../core/services/firebase_webrtc_service.dart';
+import '../../core/config/app_router.dart';
 
 class FirebaseVideoCallPage extends StatefulWidget {
   final String? roomId;
@@ -44,14 +45,14 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
     
     // Listen to streams
     _webrtcService.localStream.listen((stream) {
-      if (stream != null) {
+      if (stream != null && mounted) {
         _localRenderer.srcObject = stream;
         setState(() {});
       }
     });
     
     _webrtcService.remoteStream.listen((stream) {
-      if (stream != null) {
+      if (stream != null && mounted) {
         _remoteRenderer.srcObject = stream;
         setState(() {
           _isConnected = true;
@@ -60,9 +61,25 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
     });
     
     _webrtcService.callState.listen((status) {
-      setState(() {
-        _callStatus = status;
-      });
+      if (mounted) {
+        setState(() {
+          _callStatus = status;
+        });
+        
+        // Auto-navigate to home screen when call ends or disconnects
+        if (status == 'Call ended' || status == 'Disconnected' || status == 'Connection failed') {
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              context.go(AppRouter.users);
+              BotToast.showText(
+                text: status == 'Call ended' ? 'Call ended' : 'Call disconnected',
+                textStyle: const TextStyle(color: Colors.white),
+                contentColor: Colors.red,
+              );
+            }
+          });
+        }
+      }
     });
 
     await _initializeCall();
@@ -90,6 +107,13 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
         textStyle: const TextStyle(color: Colors.white),
         contentColor: Colors.red,
       );
+      
+      // Navigate back to home on error after a delay
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          context.go(AppRouter.users);
+        }
+      });
     }
   }
 
@@ -184,7 +208,8 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
   Future<void> _endCall() async {
     await _webrtcService.endCall();
     if (mounted) {
-      context.pop();
+      // Navigate back to users page (home screen) instead of just going back one level
+      context.go(AppRouter.users);
       BotToast.showText(
         text: 'Call ended',
         textStyle: const TextStyle(color: Colors.white),
@@ -263,15 +288,21 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            _isConnected ? Icons.person : Icons.videocam_off,
+                            _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
+                                ? Icons.error_outline
+                                : _isConnected ? Icons.person : Icons.videocam_off,
                             size: 120,
-                            color: Colors.white54,
+                            color: _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
+                                ? Colors.red
+                                : Colors.white54,
                           ),
                           const SizedBox(height: 24),
                           Text(
                             _callStatus,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
+                                  ? Colors.red
+                                  : Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),

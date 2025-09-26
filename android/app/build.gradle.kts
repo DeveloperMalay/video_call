@@ -26,7 +26,7 @@ android {
         applicationId = "com.videocall.video_call_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23 // Firebase Firestore requires API level 23+
+        minSdk = flutter.minSdkVersion // Firebase Firestore requires API level 23+
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

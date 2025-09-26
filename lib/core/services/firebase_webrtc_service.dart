@@ -126,14 +126,16 @@ class FirebaseWebRTCService {
       _callId = callId;
       _isCaller = false;
       
-      _callStateController.add('Joining call...');
+      _callStateController.add('Looking for meeting...');
       
       final callDoc = _firestore.collection('calls').doc(callId);
       final snapshot = await callDoc.get();
-      
       if (!snapshot.exists) {
-        throw Exception('Call not found');
+        _callStateController.add('Meeting not found');
+        throw Exception('Meeting not found. Please check the meeting ID or ask the host to create the meeting first.');
       }
+      
+      _callStateController.add('Joining call...');
 
       final data = snapshot.data()!;
       

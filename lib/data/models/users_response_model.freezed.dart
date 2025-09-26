@@ -21,10 +21,8 @@ UsersResponseModel _$UsersResponseModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UsersResponseModel {
   int get page => throw _privateConstructorUsedError;
-  @JsonKey(name: 'per_page')
   int get perPage => throw _privateConstructorUsedError;
   int get total => throw _privateConstructorUsedError;
-  @JsonKey(name: 'total_pages')
   int get totalPages => throw _privateConstructorUsedError;
   List<UserModel> get data => throw _privateConstructorUsedError;
 
@@ -45,11 +43,7 @@ abstract class $UsersResponseModelCopyWith<$Res> {
       _$UsersResponseModelCopyWithImpl<$Res, UsersResponseModel>;
   @useResult
   $Res call(
-      {int page,
-      @JsonKey(name: 'per_page') int perPage,
-      int total,
-      @JsonKey(name: 'total_pages') int totalPages,
-      List<UserModel> data});
+      {int page, int perPage, int total, int totalPages, List<UserModel> data});
 }
 
 /// @nodoc
@@ -107,11 +101,7 @@ abstract class _$$UsersResponseModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int page,
-      @JsonKey(name: 'per_page') int perPage,
-      int total,
-      @JsonKey(name: 'total_pages') int totalPages,
-      List<UserModel> data});
+      {int page, int perPage, int total, int totalPages, List<UserModel> data});
 }
 
 /// @nodoc
@@ -163,9 +153,9 @@ class __$$UsersResponseModelImplCopyWithImpl<$Res>
 class _$UsersResponseModelImpl implements _UsersResponseModel {
   const _$UsersResponseModelImpl(
       {required this.page,
-      @JsonKey(name: 'per_page') required this.perPage,
+      required this.perPage,
       required this.total,
-      @JsonKey(name: 'total_pages') required this.totalPages,
+      required this.totalPages,
       required final List<UserModel> data})
       : _data = data;
 
@@ -175,12 +165,10 @@ class _$UsersResponseModelImpl implements _UsersResponseModel {
   @override
   final int page;
   @override
-  @JsonKey(name: 'per_page')
   final int perPage;
   @override
   final int total;
   @override
-  @JsonKey(name: 'total_pages')
   final int totalPages;
   final List<UserModel> _data;
   @override
@@ -233,9 +221,9 @@ class _$UsersResponseModelImpl implements _UsersResponseModel {
 abstract class _UsersResponseModel implements UsersResponseModel {
   const factory _UsersResponseModel(
       {required final int page,
-      @JsonKey(name: 'per_page') required final int perPage,
+      required final int perPage,
       required final int total,
-      @JsonKey(name: 'total_pages') required final int totalPages,
+      required final int totalPages,
       required final List<UserModel> data}) = _$UsersResponseModelImpl;
 
   factory _UsersResponseModel.fromJson(Map<String, dynamic> json) =
@@ -244,12 +232,10 @@ abstract class _UsersResponseModel implements UsersResponseModel {
   @override
   int get page;
   @override
-  @JsonKey(name: 'per_page')
   int get perPage;
   @override
   int get total;
   @override
-  @JsonKey(name: 'total_pages')
   int get totalPages;
   @override
   List<UserModel> get data;

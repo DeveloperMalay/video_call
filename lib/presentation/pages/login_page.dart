@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bot_toast/bot_toast.dart';
 import '../../core/config/app_router.dart';
@@ -20,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuthService _authService = FirebaseAuthService();
-  
+
   bool _isLoading = false;
   bool _isSignUpMode = false;
 
@@ -83,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
           _passwordController.text,
         );
       }
-      
+
       // Navigate to users page on success
       if (mounted) {
         context.go(AppRouter.users);
@@ -137,7 +136,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 Text(
-                  _isSignUpMode ? 'Sign up to get started' : 'Sign in to continue',
+                  _isSignUpMode
+                      ? 'Sign up to get started'
+                      : 'Sign in to continue',
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white70,
@@ -179,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _isSignUpMode 
+                            _isSignUpMode
                                 ? 'Password must be at least 6 characters'
                                 : 'Use your Firebase account credentials',
                             style: const TextStyle(
@@ -205,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
                               });
                             },
                             child: Text(
-                              _isSignUpMode 
+                              _isSignUpMode
                                   ? 'Already have an account? Sign In'
                                   : 'Don\'t have an account? Sign Up',
                               style: const TextStyle(

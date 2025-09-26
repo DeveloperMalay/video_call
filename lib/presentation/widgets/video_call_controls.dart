@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubit/video_call/video_call_cubit.dart';
+import '../../core/config/app_router.dart';
 
 class VideoCallControls extends StatelessWidget {
   const VideoCallControls({super.key});
@@ -59,7 +60,8 @@ class VideoCallControls extends StatelessWidget {
                 backgroundColor: Colors.red,
                 onPressed: () {
                   cubit.leaveMeeting();
-                  context.pop();
+                  // Navigate back to users page (home screen) instead of just going back one level
+                  context.go(AppRouter.users);
                 },
                 tooltip: 'End Call',
               ),

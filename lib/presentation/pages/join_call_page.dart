@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/config/app_router.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -60,56 +57,37 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
 
   Future<void> _createMeeting() async {
     if (_createFormKey.currentState!.validate()) {
-      // Generate unique meeting ID
-      final meetingId = const Uuid().v4().substring(0, 8).toUpperCase();
       final callerName = _getCurrentUserName();
       
-      // Navigate to video call
-      context.go('${AppRouter.webrtcCall}?roomId=$meetingId&isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
+      // Navigate to video call - let the service generate the UUID
+      context.go('${AppRouter.webrtcCall}?isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
+    }
+  }
+
+  Future<void> _createTestMeeting() async {
+    if (_createFormKey.currentState!.validate()) {
+      final callerName = _getCurrentUserName();
       
-      // Show meeting created success
-      BotToast.showText(
-        text: 'Meeting created! ID: $meetingId',
-        textStyle: const TextStyle(color: Colors.white),
-        contentColor: Colors.green,
-      );
+      // Navigate to video call - let the service generate the UUID, same as regular create meeting
+      context.go('${AppRouter.webrtcCall}?isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
     }
   }
 
   void _joinMeeting() {
     if (_joinFormKey.currentState!.validate()) {
-      final meetingId = _joinRoomIdController.text.trim().toUpperCase();
+      final meetingId = _joinRoomIdController.text.trim();
       final callerName = _getCurrentUserName();
+      
       context.go('${AppRouter.webrtcCall}?roomId=$meetingId&isCaller=false&callerName=${Uri.encodeComponent(callerName)}');
     }
   }
 
   Future<void> _shareMeetingLink() async {
-    // Generate meeting ID for sharing
-    final meetingId = const Uuid().v4().substring(0, 8).toUpperCase();
-    final meetingUrl = 'videocallapp://join/$meetingId';
-    
-    try {
-      await Share.share(
-        'Join my video meeting!\n\nMeeting ID: $meetingId\nDirect Link: $meetingUrl\n\nIf you don\'t have the app installed, download it first and then use the meeting ID to join.',
-        subject: 'Video Meeting Invitation',
-      );
-      
-      // Also copy to clipboard
-      await Clipboard.setData(ClipboardData(text: meetingUrl));
-      
-      BotToast.showText(
-        text: 'Meeting link copied to clipboard!',
-        textStyle: const TextStyle(color: Colors.white),
-        contentColor: Colors.blue,
-      );
-    } catch (e) {
-      BotToast.showText(
-        text: 'Failed to share meeting link',
-        textStyle: const TextStyle(color: Colors.white),
-        contentColor: Colors.red,
-      );
-    }
+    BotToast.showText(
+      text: 'Create a meeting first to get the meeting ID to share',
+      textStyle: const TextStyle(color: Colors.white),
+      contentColor: Colors.orange,
+    );
   }
 
   Widget _buildCreateTab() {
@@ -147,6 +125,19 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
             onPressed: _createMeeting,
             text: 'Start Meeting',
             isLoading: false,
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: _createTestMeeting,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF667eea),
+              side: const BorderSide(color: Color(0xFF667eea)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('Create Test Meeting (Shows ID)'),
           ),
           const SizedBox(height: 16),
           Row(
