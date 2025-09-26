@@ -51,5 +51,18 @@
 	<string>This app needs camera access to enable video calling functionality.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access to enable audio calling functionality.</string>
+	
+	<!-- URL Schemes for deep linking -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>videocallapp.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>videocallapp</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

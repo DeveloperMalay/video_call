@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/config/app_router.dart';
-import '../../core/services/auth_storage_service.dart';
-import '../../injection_container.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -22,12 +21,11 @@ class _SplashPageState extends State<SplashPage> {
     await Future.delayed(const Duration(seconds: 2));
     
     if (mounted) {
-      // Check if user is already logged in
-      final authService = sl<AuthStorageService>();
-      final isLoggedIn = await authService.isLoggedIn();
+      // Check if user is already logged in with Firebase
+      final user = FirebaseAuth.instance.currentUser;
       
       if (mounted) {
-        if (isLoggedIn) {
+        if (user != null) {
           context.go(AppRouter.users);
         } else {
           context.go(AppRouter.login);
