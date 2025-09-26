@@ -97,16 +97,31 @@ class FirebaseWebRTCService {
         'callerId': 'caller',
       });
 
-      // Listen for answer
+      // Listen for answer and call status changes
       callDoc.snapshots().listen((snapshot) async {
+        if (!snapshot.exists) {
+          // Call document was deleted - call ended by other user
+          _callStateController.add('Call ended');
+          return;
+        }
+        
         final data = snapshot.data();
-        if (data != null && data['answer'] != null) {
-          final answer = RTCSessionDescription(
-            data['answer']['sdp'],
-            data['answer']['type'],
-          );
-          await _peerConnection?.setRemoteDescription(answer);
-          _callStateController.add('Call connected!');
+        if (data != null) {
+          // Check if call was ended by other user
+          if (data['status'] == 'ended') {
+            _callStateController.add('Call ended');
+            return;
+          }
+          
+          // Handle answer
+          if (data['answer'] != null) {
+            final answer = RTCSessionDescription(
+              data['answer']['sdp'],
+              data['answer']['type'],
+            );
+            await _peerConnection?.setRemoteDescription(answer);
+            _callStateController.add('Call connected!');
+          }
         }
       });
 
@@ -170,6 +185,20 @@ class FirebaseWebRTCService {
 
       // Listen for ICE candidates
       _listenForCandidates(callDoc);
+      
+      // Listen for call status changes (call ended by other user)
+      callDoc.snapshots().listen((snapshot) async {
+        if (!snapshot.exists) {
+          // Call document was deleted - call ended by other user
+          _callStateController.add('Call ended');
+          return;
+        }
+        
+        final data = snapshot.data();
+        if (data != null && data['status'] == 'ended') {
+          _callStateController.add('Call ended');
+        }
+      });
       
       _callStateController.add('Connected to call!');
     } catch (e) {
@@ -271,9 +300,31 @@ class FirebaseWebRTCService {
     try {
       _callStateController.add('Ending call...');
       
-      // Clean up Firestore data
+      // Mark call as ended in Firestore to notify other users
       if (_callId != null) {
-        await _firestore.collection('calls').doc(_callId).delete();
+        try {
+          await _firestore.collection('calls').doc(_callId).update({
+            'status': 'ended',
+            'endedAt': FieldValue.serverTimestamp(),
+            'endedBy': _isCaller ? 'caller' : 'joiner',
+          });
+          
+          // Delete the call document after a short delay to allow other users to see the status
+          Future.delayed(const Duration(seconds: 3), () async {
+            try {
+              await _firestore.collection('calls').doc(_callId).delete();
+            } catch (e) {
+              // Ignore deletion errors - document might already be deleted
+            }
+          });
+        } catch (e) {
+          // If update fails, try to delete directly (fallback)
+          try {
+            await _firestore.collection('calls').doc(_callId).delete();
+          } catch (deleteError) {
+            // Ignore deletion errors
+          }
+        }
       }
       
       // Close peer connection
