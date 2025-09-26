@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bot_toast/bot_toast.dart';
 import '../../core/config/app_router.dart';
 import '../../injection_container.dart';
 import '../cubit/auth/auth_cubit.dart';
@@ -47,22 +48,30 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocProvider(
-        create: (context) => AuthCubit(loginUser: sl()),
+        create: (context) => AuthCubit(
+          loginUser: sl(),
+          authStorageService: sl(),
+        ),
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
             state.when(
               initial: () {},
-              loading: () {},
+              loading: () {
+                BotToast.showLoading();
+              },
               authenticated: (auth) {
+                BotToast.closeAllLoading();
                 context.go(AppRouter.users);
               },
-              unauthenticated: () {},
+              unauthenticated: () {
+                BotToast.closeAllLoading();
+              },
               error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: Colors.red,
-                  ),
+                BotToast.closeAllLoading();
+                BotToast.showText(
+                  text: message,
+                  contentColor: Colors.red,
+                  textStyle: const TextStyle(color: Colors.white),
                 );
               },
             );
@@ -81,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -90,7 +99,6 @@ class _LoginPageState extends State<LoginPage> {
                       size: 80,
                       color: Colors.white,
                     ),
-                    const SizedBox(height: 32),
                     const Text(
                       'Welcome Back',
                       style: TextStyle(
@@ -99,7 +107,6 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 8),
                     const Text(
                       'Sign in to continue',
                       style: TextStyle(
@@ -107,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white70,
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 16),
                     Card(
                       elevation: 8,
                       shape: RoundedRectangleBorder(
@@ -134,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                'Use: test@gmail.com / test@1234',
+                                'Enter any valid email and password',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
@@ -157,10 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                                       },
                                     ),
                                     text: 'Sign In',
-                                    isLoading: state.maybeWhen(
-                                      loading: () => true,
-                                      orElse: () => false,
-                                    ),
+                                    isLoading: false,
                                   );
                                 },
                               ),

@@ -17,37 +17,22 @@ class RemoteDataSourceImpl implements RemoteDataSource {
   @override
   Future<AuthModel> login(String email, String password) async {
     try {
-      // Handle dummy credentials for demo purposes
-      if (email == 'test@gmail.com' && password == 'test@1234') {
-        // Simulate network delay
+      // Accept any valid email and password combination
+      if (email.contains('@') && password.isNotEmpty) {
+        // Simulate network delay for realistic experience
         await Future.delayed(const Duration(seconds: 1));
         
-        // Return dummy auth response
-        return const AuthModel(
-          token: 'dummy_token_123456',
-          email: 'test@gmail.com',
+        // Generate a unique token based on email
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final token = 'token_${email.hashCode}_$timestamp';
+        
+        // Return auth response for any valid email/password
+        return AuthModel(
+          token: token,
+          email: email,
         );
-      }
-      
-      // For other credentials, try ReqRes API
-      final response = await dio.post(
-        '${ApiConstants.baseUrl}${ApiConstants.loginEndpoint}',
-        data: {
-          'email': email,
-          'password': password,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return AuthModel.fromJson(response.data);
       } else {
-        throw ServerException();
-      }
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout) {
-        throw NetworkException();
-      } else {
+        // Invalid email format or empty password
         throw ServerException();
       }
     } catch (e) {
