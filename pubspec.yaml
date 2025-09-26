@@ -43,11 +43,20 @@ dependencies:
   equatable: ^2.0.5
   dartz: ^0.10.1
   shared_preferences: ^2.2.2
+  flutter_dotenv: ^5.1.0
   
   # UI
   flutter_svg: ^2.0.8
   cached_network_image: ^3.3.0
   cupertino_icons: ^1.0.8
+  bot_toast: ^4.1.3
+  
+  # WebRTC & Firebase
+  flutter_webrtc: ^1.2.0
+  cloud_firestore: ^5.4.2
+  firebase_core: ^3.6.0
+  uuid: ^4.3.3
+  socket_io_client: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -69,3 +78,4 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - .env

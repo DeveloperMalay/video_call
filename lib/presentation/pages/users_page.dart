@@ -1,13 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bot_toast/bot_toast.dart';
 import '../../core/config/app_router.dart';
 import '../../injection_container.dart';
+import '../cubit/auth/auth_cubit.dart';
 import '../cubit/users/users_cubit.dart';
 import '../widgets/user_tile.dart';
 
 class UsersPage extends StatelessWidget {
   const UsersPage({super.key});
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                
+                // Create AuthCubit and logout
+                final authCubit = AuthCubit(
+                  loginUser: sl(),
+                  authStorageService: sl(),
+                );
+                
+                await authCubit.logout();
+                
+                // Navigate to login page
+                if (context.mounted) {
+                  context.go(AppRouter.login);
+                  BotToast.showText(
+                    text: 'Logged out successfully',
+                    textStyle: const TextStyle(color: Colors.white),
+                    contentColor: Colors.green,
+                  );
+                }
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +64,25 @@ class UsersPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.video_call),
-            onPressed: () => context.go(AppRouter.videoCall),
+            onPressed: () => context.go(AppRouter.joinCall),
+          ),
+          PopupMenuButton(
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'logout',
+                child: ListTile(
+                  leading: Icon(Icons.logout),
+                  title: Text('Logout'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == 'logout') {
+                _showLogoutDialog(context);
+              }
+            },
           ),
         ],
       ),

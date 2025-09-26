@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/constants/api_constants.dart';
 import 'core/network/network_info.dart';
+import 'core/services/auth_storage_service.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/datasources/remote_data_source.dart';
 import 'data/models/auth_model.dart';
@@ -42,6 +43,7 @@ Future<void> init() async {
 
   // Core
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
+  sl.registerLazySingleton<AuthStorageService>(() => AuthStorageService());
 
   // Data sources
   sl.registerLazySingleton<RemoteDataSource>(() => RemoteDataSourceImpl(sl()));

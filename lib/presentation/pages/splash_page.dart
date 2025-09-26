@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/config/app_router.dart';
+import '../../core/services/auth_storage_service.dart';
+import '../../injection_container.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -18,8 +20,19 @@ class _SplashPageState extends State<SplashPage> {
 
   void _navigateToLogin() async {
     await Future.delayed(const Duration(seconds: 2));
+    
     if (mounted) {
-      context.go(AppRouter.login);
+      // Check if user is already logged in
+      final authService = sl<AuthStorageService>();
+      final isLoggedIn = await authService.isLoggedIn();
+      
+      if (mounted) {
+        if (isLoggedIn) {
+          context.go(AppRouter.users);
+        } else {
+          context.go(AppRouter.login);
+        }
+      }
     }
   }
 

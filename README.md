@@ -1,17 +1,19 @@
-# Video Call App
+# 📱 Flutter Video Call App
 
-A Flutter application with real-time video calling capabilities using Amazon Chime SDK, built with clean architecture principles.
+A comprehensive Flutter video calling application with Firebase WebRTC signaling, real-time messaging, and cross-platform support for Android and iOS.
 
-## Features
+## ✨ Features
 
-- **Authentication & Login**: Simple login screen with email/password validation
-- **Video Calling**: One-to-one video calls using Amazon Chime SDK
-- **User Management**: Fetch and display users from REST API with offline caching
-- **Clean Architecture**: Well-structured codebase with separation of concerns
-- **State Management**: Cubit for reactive state management
-- **Dependency Injection**: get_it for dependency management
-- **Offline Support**: Local caching with Hive database
-- **Permissions**: Proper camera and microphone permission handling
+- 🎥 **Real-time Video Calling** - High-quality peer-to-peer video calls using WebRTC
+- 🔥 **Firebase Integration** - Firestore for signaling and real-time data synchronization
+- 📱 **Cross-platform** - Works on both Android and iOS
+- 🎛️ **Call Controls** - Mute/unmute audio, enable/disable video, switch camera, end call
+- 👥 **User Management** - User authentication with persistent login
+- 🔗 **Room-based Calls** - Create or join calls using unique room IDs
+- 🎨 **Modern UI** - Clean, intuitive interface with Material Design 3
+- 🌐 **Network Handling** - Automatic reconnection and network state management
+- 📊 **State Management** - BLoC pattern for predictable state management
+- 🔧 **Dependency Injection** - Clean architecture with GetIt and Injectable
 
 ## Architecture
 
@@ -38,241 +40,340 @@ The app follows **Clean Architecture** principles with three main layers:
 - **Error**: Error handling and exceptions
 - **Network**: Network connectivity utilities
 
-## Technologies Used
+## 🛠️ Tech Stack
 
-- **Flutter**: Cross-platform mobile development
-- **Amazon Chime SDK**: Video calling functionality (Custom Method Channel implementation)
-- **Cubit**: State management (flutter_bloc)
-- **go_router**: Navigation and routing
-- **get_it**: Dependency injection
-- **injectable**: Code generation for DI
-- **freezed**: Immutable data classes
-- **Hive**: Local database for caching
-- **Dio**: HTTP client for API calls
-- **Dartz**: Functional programming utilities
+### Core Technologies
+- **Flutter** - Cross-platform UI framework
+- **Dart** - Programming language
+- **Firebase Firestore** - NoSQL database for signaling
+- **WebRTC** - Real-time communication
 
-## Requirements
+### State Management
+- **flutter_bloc** - Business Logic Component pattern
+- **cubit** - Simplified BLoC for state management
 
-- Flutter SDK (>=3.0.0)
-- Dart SDK
-- Android Studio / VS Code
-- iOS Simulator / Android Emulator
+### Dependency Injection
+- **get_it** - Service locator
+- **injectable** - Code generation for DI
 
-## Installation & Setup
+### Networking & Storage
+- **dio** - HTTP client
+- **shared_preferences** - Local storage
+- **hive** - Fast NoSQL database
+
+### UI & Navigation
+- **go_router** - Declarative routing
+- **bot_toast** - Elegant toast notifications
+- **flutter_svg** - SVG support
+- **cached_network_image** - Image caching
+
+### Development Tools
+- **flutter_lints** - Official linting rules
+- **build_runner** - Code generation
+- **freezed** - Code generation for data classes
+- **flutter_dotenv** - Environment variable management
+
+## 📋 Prerequisites
+
+Before running the app, ensure you have:
+
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.0.0 or higher)
+- [Android Studio](https://developer.android.com/studio) or [VS Code](https://code.visualstudio.com/)
+- [Firebase CLI](https://firebase.google.com/docs/cli) (optional but recommended)
+- Android SDK (API level 23+ for Android)
+- Xcode 12.0+ (for iOS development)
+- iOS 13.0+ target
+
+## 🚀 Getting Started
 
 ### 1. Clone the Repository
+
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/video_call_app.git
 cd video_call_app
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 flutter pub get
 ```
 
-### 3. Generate Code
+### 3. Firebase Setup
+
+#### Option 1: Using Environment Variables (Recommended)
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update `.env` with your Firebase configuration values:
+   ```env
+   FIREBASE_PROJECT_ID=your-project-id
+   FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+   # ... other Firebase config values
+   ```
+
+#### Option 2: Using Firebase CLI
+
+1. Install Firebase CLI:
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+2. Login to Firebase:
+   ```bash
+   firebase login
+   ```
+
+3. Configure Flutter for Firebase:
+   ```bash
+   flutterfire configure
+   ```
+
+### 4. Set up Firestore Database
+
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Create a new project or select existing one
+3. Navigate to **Firestore Database**
+4. Click **"Create database"**
+5. Choose **"Start in test mode"** for development
+6. Select your preferred location
+
+#### Firestore Security Rules (Development)
+
+For testing purposes, use these rules:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+**⚠️ Important:** Update security rules for production deployment.
+
+### 5. Configure Platform-Specific Settings
+
+#### Android Configuration
+
+1. Place your `google-services.json` in `android/app/`
+2. Ensure minimum SDK version in `android/app/build.gradle`:
+   ```gradle
+   minSdkVersion 23
+   targetSdkVersion 36
+   ```
+
+#### iOS Configuration
+
+1. Place your `GoogleService-Info.plist` in `ios/Runner/`
+2. Update iOS deployment target in `ios/Podfile`:
+   ```ruby
+   platform :ios, '13.0'
+   ```
+
+### 6. Permissions Setup
+
+The app handles the following permissions automatically:
+
+- **Camera** - For video calling
+- **Microphone** - For audio during calls
+- **Internet** - For network connectivity
+
+Permissions are requested at runtime when needed.
+
+### 7. Generate Code
+
 ```bash
 flutter packages pub run build_runner build --delete-conflicting-outputs
 ```
 
-### 4. Configure Amazon Chime SDK
-The app uses a custom Method Channel implementation that communicates with native Amazon Chime SDKs on both Android and iOS platforms.
-
-**Current Implementation**: 
-- Method Channel bridge is implemented and ready
-- Native code stubs are in place for both platforms
-- Actual Chime SDK integration is commented out but ready to be enabled
-
-**To Enable Full Chime SDK Integration**:
-
-#### Android:
-1. Uncomment the Chime SDK dependencies in `android/app/build.gradle.kts`:
-   ```kotlin
-   implementation 'com.amazonaws:amazon-chime-sdk-media:0.17.2'
-   implementation 'com.amazonaws:amazon-chime-sdk:0.17.2'
-   ```
-
-2. Uncomment the Chime SDK code in `android/app/src/main/kotlin/.../ChimeSDKPlugin.kt`
-
-#### iOS:
-1. Add Chime SDK to your `ios/Podfile`:
-   ```ruby
-   pod 'AmazonChimeSDK', '~> 0.17.2'
-   pod 'AmazonChimeSDKMedia', '~> 0.17.2'
-   ```
-
-2. Uncomment the Chime SDK code in `ios/Runner/ChimeSDKPlugin.swift`
-
-**Production Requirements**:
-- Set up Amazon Chime SDK backend service for meeting management
-- Configure proper authentication with AWS
-- Implement meeting creation and attendee management APIs
-
-## Running the App
+## 🏃‍♂️ Running the App
 
 ### Development Mode
+
 ```bash
+# Run on connected device/emulator
 flutter run
+
+# Run in debug mode with hot reload
+flutter run --debug
+
+# Run on specific device
+flutter run -d <device_id>
 ```
 
+### Build for Release
+
+```bash
+# Android APK
+flutter build apk --release
+
+# Android App Bundle
+flutter build appbundle --release
+
+# iOS
+flutter build ios --release
+```
+
+## 📱 How to Use
+
+### 1. **Login**
+   - Enter any email and password (demo authentication)
+   - Credentials are stored locally using SharedPreferences
+
+### 2. **Start a Video Call**
+   - Tap the video call icon from the Users page
+   - Enter your name and room ID
+   - Click **"Create Call"** to start a new call
+   - Or click **"Join Call"** to join an existing call
+
+### 3. **Call Controls**
+   - **🎤 Mute/Unmute** - Toggle audio on/off
+   - **📹 Video** - Toggle video on/off
+   - **🔄 Switch Camera** - Switch between front/rear camera
+   - **📞 End Call** - Terminate the call and return to previous screen
+
+### 4. **Sharing Call ID**
+   - When creating a call, a unique Call ID is generated
+   - Share this ID with others to join the call
+   - Tap the info icon to view/copy the Call ID
+
+## 🔧 Configuration
+
+### Environment Variables
+
+The app uses environment variables for Firebase configuration. Create a `.env` file with:
+
+```env
+# Firebase Configuration
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+FIREBASE_STORAGE_BUCKET=your-project-id.firebasestorage.app
+FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+
+# Platform-specific API keys and App IDs
+FIREBASE_ANDROID_API_KEY=your-android-api-key
+FIREBASE_ANDROID_APP_ID=your-android-app-id
+FIREBASE_IOS_API_KEY=your-ios-api-key
+FIREBASE_IOS_APP_ID=your-ios-app-id
+FIREBASE_IOS_BUNDLE_ID=your-ios-bundle-id
+```
+
+### Firebase Firestore Structure
+
+The app uses the following Firestore structure:
+
+```
+calls/
+├── {callId}/
+│   ├── offer: {type, sdp}
+│   ├── answer: {type, sdp}
+│   ├── callerCandidates/
+│   │   └── {candidateId}: {candidate, sdpMid, sdpMLineIndex}
+│   └── calleeCandidates/
+│       └── {candidateId}: {candidate, sdpMid, sdpMLineIndex}
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Firebase Configuration Error**
+   ```
+   [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+   ```
+   **Solution:** This is handled automatically in the code. Restart the app if persists.
+
+2. **Firestore Unavailable Error**
+   ```
+   [cloud_firestore/unavailable] The service is currently unavailable
+   ```
+   **Solutions:**
+   - Ensure Firestore database is created in Firebase Console
+   - Check internet connectivity
+   - Verify Firebase configuration values
+
+3. **WebRTC Connection Issues**
+   - Ensure both devices are on the same network or use STUN servers
+   - Check camera and microphone permissions
+   - Verify Firestore security rules allow read/write access
+
+4. **Build Issues**
+   ```
+   The plugin "cloud_firestore" requires a higher minimum iOS deployment version
+   ```
+   **Solution:** Update `ios/Podfile` to use iOS 13.0+:
+   ```ruby
+   platform :ios, '13.0'
+   ```
+
+5. **Kotlin Version Error**
+   ```
+   Kotlin binary version is incompatible
+   ```
+   **Solution:** Update `android/settings.gradle.kts`:
+   ```kotlin
+   id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+   ```
+
 ### Debug Mode
+
+Enable debug logs by running:
 ```bash
 flutter run --debug
 ```
 
-### Release Mode
+Check Firebase connection:
 ```bash
-flutter run --release
+flutter logs | grep Firebase
 ```
 
-## API Configuration
+## 🤝 Contributing
 
-The app uses [ReqRes API](https://reqres.in/) for demonstration:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- **Base URL**: `https://reqres.in/api/`
-- **Login Endpoint**: `POST /login`
-- **Users Endpoint**: `GET /users`
+### Development Guidelines
 
-### Test Credentials
-- **Email**: `test@gmail.com`
-- **Password**: `test@1234`
+1. Follow the existing code structure and naming conventions
+2. Write tests for new features
+3. Update documentation for any changes
+4. Use conventional commit messages
+5. Ensure code passes linting: `flutter analyze`
 
-**Alternative ReqRes API Credentials** (also supported):
-- **Email**: `eve.holt@reqres.in`
-- **Password**: `cityslicka`
+### Commit Message Format
 
-## Features Overview
+```
+type(scope): description
 
-### 1. Authentication Flow
-- Clean login UI with validation
-- Mock authentication using ReqRes API
-- Token-based session management
-- Local auth caching with Hive
-
-### 2. Video Calling
-- Amazon Chime SDK integration
-- One-to-one video calls
-- Audio/video controls (mute/unmute, enable/disable video)
-- Permission handling for camera and microphone
-- Hardcoded meeting ID for demo purposes
-
-### 3. Users Management
-- Fetch users from REST API
-- Offline caching support
-- Pull-to-refresh functionality
-- Error handling with fallback to cached data
-
-### 4. Offline Support
-- Hive local database for data persistence
-- Network connectivity detection
-- Automatic fallback to cached data when offline
-
-## Permissions
-
-### Android
-The following permissions are configured in `android/app/src/main/AndroidManifest.xml`:
-- Camera access
-- Microphone access
-- Internet connectivity
-- Network state access
-- Audio settings modification
-
-### iOS
-The following permissions are configured in `ios/Runner/Info.plist`:
-- Camera usage description
-- Microphone usage description
-
-## Build Configuration
-
-### Android
-- **Min SDK**: 21
-- **Target SDK**: 34
-- **Compile SDK**: 34
-
-### iOS
-- **Min iOS Version**: 11.0
-- **Target iOS Version**: 16.0
-
-## Testing
-
-Run tests using:
-```bash
-flutter test
+feat: add video call functionality
+fix: resolve Firebase connection issue  
+docs: update README with setup instructions
 ```
 
-## Building for Release
+## 📄 License
 
-### Android APK
-```bash
-flutter build apk --release
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Android App Bundle
-```bash
-flutter build appbundle --release
-```
+## 🙏 Acknowledgments
 
-### iOS
-```bash
-flutter build ios --release
-```
+- [Flutter Team](https://flutter.dev) for the amazing framework
+- [Firebase Team](https://firebase.google.com) for the backend services
+- [WebRTC Community](https://webrtc.org) for real-time communication
 
-## Known Limitations
+## 📞 Support
 
-1. **Amazon Chime SDK**: Method Channel implementation is ready but actual native SDK integration is commented out for demo purposes
-2. **Meeting Management**: Hardcoded meeting ID for demonstration
-3. **Video Rendering**: Video streams are simulated in the UI (actual video rendering requires enabling native SDK code)
-4. **Backend Integration**: No real backend service for meeting creation/management
-5. **Authentication**: Uses mock API (ReqRes) for demonstration
+If you encounter any issues or have questions:
 
-## Future Enhancements
-
-1. **Real Backend Integration**: Implement proper Amazon Chime SDK backend service
-2. **Dynamic Meeting Creation**: Allow users to create and join custom meetings
-3. **Push Notifications**: Implement incoming call notifications
-4. **Group Calling**: Support for multi-participant video calls
-5. **Screen Sharing**: Full screen sharing implementation
-6. **Recording**: Meeting recording functionality
-7. **Chat**: In-call text messaging
-8. **Contact Management**: User contact management system
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Build Runner Issues**
-   ```bash
-   flutter packages pub run build_runner clean
-   flutter packages pub run build_runner build --delete-conflicting-outputs
-   ```
-
-2. **Permission Denied**
-   - Ensure camera/microphone permissions are granted
-   - Check platform-specific permission configurations
-
-3. **Network Issues**
-   - Verify internet connectivity
-   - Check API endpoints are accessible
-
-4. **Dependency Conflicts**
-   ```bash
-   flutter clean
-   flutter pub get
-   ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and ensure code quality
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+1. Check the [Troubleshooting](#-troubleshooting) section
+2. Search existing [GitHub Issues](https://github.com/yourusername/video_call_app/issues)
+3. Create a new issue with detailed information
 
 ---
 
-**Note**: This is a demonstration project showcasing Flutter development best practices with clean architecture, video calling integration, and modern state management patterns.
+**Made with ❤️ using Flutter**
