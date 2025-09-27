@@ -359,7 +359,7 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: _localRenderer.srcObject != null && _isVideoEnabled
+                        child: (_localRenderer.srcObject != null && _isVideoEnabled)
                             ? RTCVideoView(
                                 _localRenderer,
                                 objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
@@ -369,7 +369,7 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
                                 color: Colors.grey[800],
                                 child: Center(
                                   child: UserAvatar(
-                                    displayName: _currentUserName,
+                                    displayName: _currentUserName ?? 'You',
                                     photoURL: _currentUserPhoto,
                                     size: 60,
                                     backgroundColor: const Color(0xFF667eea),
