@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/services/firebase_webrtc_service.dart';
 import '../../core/config/app_router.dart';
+import '../widgets/user_avatar.dart';
 
 class FirebaseVideoCallPage extends StatefulWidget {
   final String? roomId;
@@ -32,11 +34,24 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
   bool _isVideoEnabled = true;
   bool _isConnected = false;
   String? _currentCallId;
+  String? _currentUserName;
+  String? _currentUserPhoto;
 
   @override
   void initState() {
     super.initState();
+    _getCurrentUserInfo();
     _initializeRenderers();
+  }
+
+  void _getCurrentUserInfo() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _currentUserName = user.displayName ?? user.email?.split('@').first ?? 'User';
+      _currentUserPhoto = user.photoURL;
+    } else {
+      _currentUserName = widget.callerName ?? 'User';
+    }
   }
 
   Future<void> _initializeRenderers() async {
@@ -269,60 +284,67 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
               child: Stack(
                 children: [
                   // Remote video (full screen)
-                  if (_isConnected && _remoteRenderer.srcObject != null)
-                    SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: RTCVideoView(
-                        _remoteRenderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        mirror: false,
-                      ),
-                    )
-                  else
-                    Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      color: Colors.grey[900],
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
-                                ? Icons.error_outline
-                                : _isConnected ? Icons.person : Icons.videocam_off,
-                            size: 120,
-                            color: _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
-                                ? Colors.red
-                                : Colors.white54,
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            _callStatus,
-                            style: TextStyle(
-                              color: _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
-                                  ? Colors.red
-                                  : Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (widget.isCaller && !_isConnected) ...[
-                            const SizedBox(height: 16),
-                            Text(
-                              _currentCallId != null 
-                                  ? 'Call ID: ${_currentCallId!.substring(0, 8)}...'
-                                  : 'Creating call...',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Colors.grey[900],
+                    child: _isConnected && _remoteRenderer.srcObject != null
+                        ? RTCVideoView(
+                            _remoteRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            mirror: false,
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (_callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed'))
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 120,
+                                  color: Colors.red,
+                                )
+                              else if (_isConnected)
+                                UserAvatar(
+                                  displayName: widget.callerName ?? (widget.isCaller ? 'Callee' : 'Caller'),
+                                  size: 120,
+                                  backgroundColor: Colors.grey[700],
+                                  textSize: 48,
+                                )
+                              else
+                                const Icon(
+                                  Icons.videocam_off,
+                                  size: 120,
+                                  color: Colors.white54,
+                                ),
+                              const SizedBox(height: 24),
+                              Text(
+                                _isConnected && _remoteRenderer.srcObject == null 
+                                    ? 'Remote user\'s camera is off'
+                                    : _callStatus,
+                                style: TextStyle(
+                                  color: _callStatus.contains('not found') || _callStatus.contains('Error') || _callStatus.contains('Failed')
+                                      ? Colors.red
+                                      : Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                              if (widget.isCaller && !_isConnected) ...[
+                                const SizedBox(height: 16),
+                                Text(
+                                  _currentCallId != null 
+                                      ? 'Call ID: ${_currentCallId!.substring(0, 8)}...'
+                                      : 'Creating call...',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                  ),
                   
                   // Local video (small overlay)
                   Positioned(
@@ -337,7 +359,7 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: _localRenderer.srcObject != null
+                        child: _localRenderer.srcObject != null && _isVideoEnabled
                             ? RTCVideoView(
                                 _localRenderer,
                                 objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
@@ -345,11 +367,13 @@ class _FirebaseVideoCallPageState extends State<FirebaseVideoCallPage> {
                               )
                             : Container(
                                 color: Colors.grey[800],
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.videocam_off,
-                                    color: Colors.white54,
-                                    size: 40,
+                                child: Center(
+                                  child: UserAvatar(
+                                    displayName: _currentUserName,
+                                    photoURL: _currentUserPhoto,
+                                    size: 60,
+                                    backgroundColor: const Color(0xFF667eea),
+                                    textSize: 24,
                                   ),
                                 ),
                               ),

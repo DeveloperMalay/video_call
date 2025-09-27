@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/services/webrtc_service.dart';
 import '../../core/services/signaling_service.dart';
+import '../widgets/user_avatar.dart';
 
 class WebRTCCallPage extends StatefulWidget {
   final String roomId;
@@ -30,11 +32,24 @@ class _WebRTCCallPageState extends State<WebRTCCallPage> {
   bool _isVideoEnabled = true;
   bool _isFrontCamera = true;
   bool _isConnected = false;
+  String? _currentUserName;
+  String? _currentUserPhoto;
   
   @override
   void initState() {
     super.initState();
+    _getCurrentUserInfo();
     _initialize();
+  }
+
+  void _getCurrentUserInfo() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _currentUserName = user.displayName ?? user.email?.split('@').first ?? 'User';
+      _currentUserPhoto = user.photoURL;
+    } else {
+      _currentUserName = 'User';
+    }
   }
 
   Future<void> _initialize() async {
@@ -200,29 +215,30 @@ class _WebRTCCallPageState extends State<WebRTCCallPage> {
                 Container(
                   width: double.infinity,
                   height: double.infinity,
-                  child: _isConnected
+                  color: Colors.grey[900],
+                  child: _isConnected && _remoteRenderer.srcObject != null
                       ? RTCVideoView(_remoteRenderer, mirror: false)
-                      : Container(
-                          color: Colors.grey[900],
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.person,
-                                  size: 120,
-                                  color: Colors.white54,
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              UserAvatar(
+                                displayName: 'Remote User',
+                                size: 120,
+                                backgroundColor: Colors.grey[700],
+                                textSize: 48,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _isConnected 
+                                    ? 'Remote user\'s camera is off'
+                                    : 'Waiting for remote video...',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
                                 ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Waiting for remote video...',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                 ),
@@ -239,15 +255,17 @@ class _WebRTCCallPageState extends State<WebRTCCallPage> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: _localRenderer.srcObject != null
+                      child: _localRenderer.srcObject != null && _isVideoEnabled
                           ? RTCVideoView(_localRenderer, mirror: _isFrontCamera)
                           : Container(
                               color: Colors.grey[800],
-                              child: const Center(
-                                child: Icon(
-                                  Icons.videocam_off,
-                                  color: Colors.white54,
-                                  size: 40,
+                              child: Center(
+                                child: UserAvatar(
+                                  displayName: _currentUserName,
+                                  photoURL: _currentUserPhoto,
+                                  size: 60,
+                                  backgroundColor: const Color(0xFF667eea),
+                                  textSize: 24,
                                 ),
                               ),
                             ),

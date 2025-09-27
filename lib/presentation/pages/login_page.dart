@@ -119,106 +119,110 @@ class _LoginPageState extends State<LoginPage> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: ListView(
               children: [
-                const Icon(
-                  Icons.video_call,
-                  size: 80,
-                  color: Colors.white,
-                ),
-                Text(
-                  _isSignUpMode ? 'Create Account' : 'Welcome Back',
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  _isSignUpMode
-                      ? 'Sign up to get started'
-                      : 'Sign in to continue',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          if (_isSignUpMode) ...[
-                            CustomTextField(
-                              controller: _nameController,
-                              label: 'Full Name',
-                              keyboardType: TextInputType.name,
-                              validator: _validateName,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          CustomTextField(
-                            controller: _emailController,
-                            label: 'Email',
-                            keyboardType: TextInputType.emailAddress,
-                            validator: _validateEmail,
-                          ),
-                          const SizedBox(height: 16),
-                          CustomTextField(
-                            controller: _passwordController,
-                            label: 'Password',
-                            obscureText: true,
-                            validator: _validatePassword,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _isSignUpMode
-                                ? 'Password must be at least 6 characters'
-                                : 'Use your Firebase account credentials',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          CustomButton(
-                            onPressed: _isLoading ? null : _handleAuth,
-                            text: _isSignUpMode ? 'Sign Up' : 'Sign In',
-                            isLoading: _isLoading,
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isSignUpMode = !_isSignUpMode;
-                                _nameController.clear();
-                                _emailController.clear();
-                                _passwordController.clear();
-                              });
-                            },
-                            child: Text(
-                              _isSignUpMode
-                                  ? 'Already have an account? Sign In'
-                                  : 'Don\'t have an account? Sign Up',
-                              style: const TextStyle(
-                                color: Color(0xFF667eea),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.video_call,
+                      size: 80,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      _isSignUpMode ? 'Create Account' : 'Welcome Back',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
+                    Text(
+                      _isSignUpMode
+                          ? 'Sign up to get started'
+                          : 'Sign in to continue',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              if (_isSignUpMode) ...[
+                                CustomTextField(
+                                  controller: _nameController,
+                                  label: 'Full Name',
+                                  keyboardType: TextInputType.name,
+                                  validator: _validateName,
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              CustomTextField(
+                                controller: _emailController,
+                                label: 'Email',
+                                keyboardType: TextInputType.emailAddress,
+                                validator: _validateEmail,
+                              ),
+                              const SizedBox(height: 16),
+                              CustomTextField(
+                                controller: _passwordController,
+                                label: 'Password',
+                                obscureText: true,
+                                validator: _validatePassword,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _isSignUpMode
+                                    ? 'Password must be at least 6 characters'
+                                    : 'Use your Firebase account credentials',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              CustomButton(
+                                onPressed: _isLoading ? null : _handleAuth,
+                                text: _isSignUpMode ? 'Sign Up' : 'Sign In',
+                                isLoading: _isLoading,
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isSignUpMode = !_isSignUpMode;
+                                    _nameController.clear();
+                                    _emailController.clear();
+                                    _passwordController.clear();
+                                  });
+                                },
+                                child: Text(
+                                  _isSignUpMode
+                                      ? 'Already have an account? Sign In'
+                                      : 'Don\'t have an account? Sign Up',
+                                  style: const TextStyle(
+                                    color: Color(0xFF667eea),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bot_toast/bot_toast.dart';
 import '../../core/config/app_router.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 
 class JoinCallPage extends StatefulWidget {
   final String? prefilledMeetingId;
-  
+
   const JoinCallPage({
     super.key,
     this.prefilledMeetingId,
@@ -18,7 +17,8 @@ class JoinCallPage extends StatefulWidget {
   State<JoinCallPage> createState() => _JoinCallPageState();
 }
 
-class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMixin {
+class _JoinCallPageState extends State<JoinCallPage>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   final _joinRoomIdController = TextEditingController();
   final _createFormKey = GlobalKey<FormState>();
@@ -28,7 +28,7 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // If meeting ID is provided via deep link, switch to Join tab and prefill
     if (widget.prefilledMeetingId != null) {
       _joinRoomIdController.text = widget.prefilledMeetingId!;
@@ -58,18 +58,10 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
   Future<void> _createMeeting() async {
     if (_createFormKey.currentState!.validate()) {
       final callerName = _getCurrentUserName();
-      
-      // Navigate to video call - let the service generate the UUID
-      context.go('${AppRouter.webrtcCall}?isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
-    }
-  }
 
-  Future<void> _createTestMeeting() async {
-    if (_createFormKey.currentState!.validate()) {
-      final callerName = _getCurrentUserName();
-      
-      // Navigate to video call - let the service generate the UUID, same as regular create meeting
-      context.go('${AppRouter.webrtcCall}?isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
+      // Navigate to video call - let the service generate the UUID
+      context.go(
+          '${AppRouter.webrtcCall}?isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
     }
   }
 
@@ -77,17 +69,10 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
     if (_joinFormKey.currentState!.validate()) {
       final meetingId = _joinRoomIdController.text.trim();
       final callerName = _getCurrentUserName();
-      
-      context.go('${AppRouter.webrtcCall}?roomId=$meetingId&isCaller=false&callerName=${Uri.encodeComponent(callerName)}');
-    }
-  }
 
-  Future<void> _shareMeetingLink() async {
-    BotToast.showText(
-      text: 'Create a meeting first to get the meeting ID to share',
-      textStyle: const TextStyle(color: Colors.white),
-      contentColor: Colors.orange,
-    );
+      context.go(
+          '${AppRouter.webrtcCall}?roomId=$meetingId&isCaller=false&callerName=${Uri.encodeComponent(callerName)}');
+    }
   }
 
   Widget _buildCreateTab() {
@@ -127,38 +112,6 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
             isLoading: false,
           ),
           const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: _createTestMeeting,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF667eea),
-              side: const BorderSide(color: Color(0xFF667eea)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: const Text('Create Test Meeting (Shows ID)'),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _shareMeetingLink,
-                  icon: const Icon(Icons.share),
-                  label: const Text('Share Link'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF667eea),
-                    side: const BorderSide(color: Color(0xFF667eea)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
@@ -271,7 +224,7 @@ class _JoinCallPageState extends State<JoinCallPage> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Hi, ${currentUser?.displayName ?? 'User'}'),
