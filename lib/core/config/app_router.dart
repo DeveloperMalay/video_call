@@ -11,6 +11,7 @@ class AppRouter {
   static const String users = '/users';
   static const String joinCall = '/join-call';
   static const String webrtcCall = '/webrtc-call';
+  static const String joinMeeting = '/join';
 
   static final GoRouter router = GoRouter(
     routes: [
@@ -47,6 +48,13 @@ class AppRouter {
             callerName: callerName,
           );
         },
+      ),
+      GoRoute(
+        path: '$joinMeeting/:meetingId',
+        name: 'join-meeting',
+        builder: (context, state) => JoinCallPage(
+          prefilledMeetingId: state.pathParameters['meetingId'],
+        ),
       ),
     ],
     initialLocation: splash,

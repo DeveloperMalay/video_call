@@ -1,78 +1,253 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bot_toast/bot_toast.dart';
 import '../../core/config/app_router.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 
 class JoinCallPage extends StatefulWidget {
-  const JoinCallPage({super.key});
+  final String? prefilledMeetingId;
+
+  const JoinCallPage({
+    super.key,
+    this.prefilledMeetingId,
+  });
 
   @override
   State<JoinCallPage> createState() => _JoinCallPageState();
 }
 
-class _JoinCallPageState extends State<JoinCallPage> {
-  final _roomIdController = TextEditingController();
-  final _callerIdController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+class _JoinCallPageState extends State<JoinCallPage>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  final _joinRoomIdController = TextEditingController();
+  final _createFormKey = GlobalKey<FormState>();
+  final _joinFormKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+
+    // If meeting ID is provided via deep link, switch to Join tab and prefill
+    if (widget.prefilledMeetingId != null) {
+      _joinRoomIdController.text = widget.prefilledMeetingId!;
+      _tabController.index = 1; // Switch to Join Meeting tab
+    }
+  }
 
   @override
   void dispose() {
-    _roomIdController.dispose();
-    _callerIdController.dispose();
+    _tabController.dispose();
+    _joinRoomIdController.dispose();
     super.dispose();
   }
 
   String? _validateRoomId(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter a Room ID';
+      return 'Please enter a Meeting ID';
     }
     return null;
   }
 
-  String? _validateCallerId(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your Caller ID';
-    }
-    return null;
+  String _getCurrentUserName() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.displayName ?? 'Anonymous User';
   }
 
-  void _createCall() {
-    if (_formKey.currentState!.validate()) {
-      final roomId = _roomIdController.text.trim();
-      final callerName = _callerIdController.text.trim();
-      context.go('${AppRouter.webrtcCall}?roomId=$roomId&isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
-    }
-  }
+  Future<void> _createMeeting() async {
+    if (_createFormKey.currentState!.validate()) {
+      final callerName = _getCurrentUserName();
 
-  void _joinCall() {
-    if (_formKey.currentState!.validate()) {
-      final roomId = _roomIdController.text.trim();
-      final callerName = _callerIdController.text.trim();
-      context.go('${AppRouter.webrtcCall}?roomId=$roomId&isCaller=false&callerName=${Uri.encodeComponent(callerName)}');
+      // Navigate to video call - let the service generate the UUID
+      context.go(
+          '${AppRouter.webrtcCall}?isCaller=true&callerName=${Uri.encodeComponent(callerName)}');
     }
   }
 
-  void _generateRoomId() {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final roomId = 'room-$timestamp';
-    _roomIdController.text = roomId;
-    BotToast.showText(
-      text: 'Room ID generated!',
-      textStyle: const TextStyle(color: Colors.white),
-      contentColor: Colors.green,
+  void _joinMeeting() {
+    if (_joinFormKey.currentState!.validate()) {
+      final meetingId = _joinRoomIdController.text.trim();
+      final callerName = _getCurrentUserName();
+
+      context.go(
+          '${AppRouter.webrtcCall}?roomId=$meetingId&isCaller=false&callerName=${Uri.encodeComponent(callerName)}');
+    }
+  }
+
+  Widget _buildCreateTab() {
+    return Form(
+      key: _createFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Icon(
+            Icons.add_circle_outline,
+            size: 64,
+            color: Color(0xFF667eea),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Start New Meeting',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF667eea),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Create an instant meeting and invite others',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          CustomButton(
+            onPressed: _createMeeting,
+            text: 'Start Meeting',
+            isLoading: false,
+          ),
+          const SizedBox(height: 12),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.blue.shade600,
+                  size: 20,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your meeting will start instantly with a unique meeting ID that you can share with others.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.blue.shade700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJoinTab() {
+    return Form(
+      key: _joinFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Icon(
+            Icons.meeting_room_outlined,
+            size: 64,
+            color: Color(0xFF667eea),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Join Meeting',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF667eea),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Enter the meeting ID to join an existing meeting',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          CustomTextField(
+            controller: _joinRoomIdController,
+            label: 'Meeting ID',
+            keyboardType: TextInputType.text,
+            validator: _validateRoomId,
+            textCapitalization: TextCapitalization.characters,
+            hintText: 'e.g. ABC12345',
+          ),
+          const SizedBox(height: 24),
+          CustomButton(
+            onPressed: _joinMeeting,
+            text: 'Join Meeting',
+            isLoading: false,
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.tips_and_updates_outlined,
+                  color: Colors.green.shade600,
+                  size: 20,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Get the meeting ID from the person who created the meeting or click on a meeting link they shared.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green.shade700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Join Video Call'),
+        title: Text('Hi, ${currentUser?.displayName ?? 'User'}'),
         backgroundColor: const Color(0xFF667eea),
         foregroundColor: Colors.white,
         elevation: 0,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorWeight: 3,
+          tabs: const [
+            Tab(
+              icon: Icon(Icons.add),
+              text: 'Create Meeting',
+            ),
+            Tab(
+              icon: Icon(Icons.login),
+              text: 'Join Meeting',
+            ),
+          ],
+        ),
       ),
       body: Container(
         width: double.infinity,
@@ -86,113 +261,42 @@ class _JoinCallPageState extends State<JoinCallPage> {
             ],
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.video_call,
-                  size: 80,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'WebRTC Video Call',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Create or join a video call room',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Card(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            // Create Meeting Tab
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Card(
                   elevation: 8,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          CustomTextField(
-                            controller: _callerIdController,
-                            label: 'Your Name',
-                            keyboardType: TextInputType.text,
-                            validator: _validateCallerId,
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomTextField(
-                                  controller: _roomIdController,
-                                  label: 'Room ID',
-                                  keyboardType: TextInputType.text,
-                                  validator: _validateRoomId,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                onPressed: _generateRoomId,
-                                icon: const Icon(Icons.refresh),
-                                tooltip: 'Generate Room ID',
-                                style: IconButton.styleFrom(
-                                  backgroundColor: const Color(0xFF667eea),
-                                  foregroundColor: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomButton(
-                                  onPressed: _createCall,
-                                  text: 'Create Call',
-                                  isLoading: false,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: CustomButton(
-                                  onPressed: _joinCall,
-                                  text: 'Join Call',
-                                  isLoading: false,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Enter a room ID and create a new call or join an existing one',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
+                    child: _buildCreateTab(),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            // Join Meeting Tab
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: _buildJoinTab(),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
